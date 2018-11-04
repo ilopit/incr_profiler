@@ -1,35 +1,73 @@
 #pragma once
 
+#include <mutex>
 #include <thread>
 #include <vector>
 
+template <typename Type>
 struct accumulator;
+
 struct finger_print
 {
     int line;
     const char* func;
     const char* file;
+    const char* name;
     std::thread::id thread;
 };
 
-struct time_print : public finger_print
+struct base_print
 {
-    uint64_t srart;
+    uint64_t start;
     uint64_t finish;
 };
 
-struct time_scope
+template <typename Type, typename Accum>
+struct scope
 {
-    time_scope(accumulator& out)
+    scope(Accum& out)
         : acc(out)
+        , type()
     {
     }
-    accumulator& acc;
+
+    ~scope()
+    {
+    }
+
+    Accum& acc;
+    Type type;
 };
 
-struct accumulator
+
+template <typename Type>
+struct single_accumulator
 {
-    std::vector<time_print> prints;
+    void
+    report(const Type& type)
+    {
+        std::lock_guard<std::mutex> g(m_lock);
+        print += type;
+    }
+
+    std::mutex m_lock;
+    finger_print print;
+    Type print;
+};
+
+template <typename Type>
+struct dynrange_accumulator
+{
+    void
+    report(const Type& type)
+    {
+        std::lock_guard<std::mutex> g(m_lock);
+        prints.push_back(type);
+    }
+
+    std::mutex m_lock;
+    finger_print print;
+    std::vector<Type> prints;
 };
 
 struct label

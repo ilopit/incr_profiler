@@ -1,7 +1,15 @@
 
+#include <gtest/gtest.h>
+#include <atomic>
+#include <chrono>
+#include <iostream>
+#include <mutex>
+#include <vector>
+
 
 int
-main()
+main(int argc, char** argv)
 {
-    return 0;
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
